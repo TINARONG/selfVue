@@ -8,7 +8,6 @@ function Watcher(vm, exp, cb) {
     this.exp = exp;//放着data的key
     this.vm = vm;
     this.value = this.get();//将自己添加到订阅器的操作
-    console.log(this.exp );
 };
 
 Watcher.prototype = {
@@ -20,7 +19,6 @@ Watcher.prototype = {
         var oldVal = this.value;
         if(value !== oldVal){
             this.value = value;
-            // this.cb(value);
             this.cb.call(this.vm, value);
         }
     },

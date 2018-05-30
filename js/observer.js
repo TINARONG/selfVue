@@ -9,12 +9,11 @@ function defineReactive(data,key,val) {
         enumerable: true,
         configurable: true,
         get:function () {
+            console.log('get' + val)
             //将订阅器Dep添加一个订阅者设计在getter里面，这是为了让Watcher初始化进行触发
             if(Dep.target){//判断是否需要添加订阅者
                 dep.addSub(Dep.target);//在这里添加一个订阅者
             }
-            console.log(Dep.target);
-            console.log('get' +key);
             return val;
         },
         set: function (newVal) {

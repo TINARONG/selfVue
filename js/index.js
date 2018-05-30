@@ -1,25 +1,21 @@
 /**
  * Created by Administrator on 2018/5/30.
  */
-function SelVal(data, el, exp) {
+function SelVue(options) {
     var self = this;
-    this.data = data;
+    this.vm = this;
+    this.data = options.data;
     
-    Object.keys(data).forEach(function (key) {
+    Object.keys(this.data).forEach(function (key) {
         self.proxyKeys(key); //绑定代理属性
     })
     
-    observe(data);
-
-    el.innerHTML = this.data[exp];// 初始化模板数据的值
-    
-    new Watcher(this, exp, function (value) {
-        el.innerHTML = value
-    });
+    observe(this.data);
+    new Compile(options.el, this.vm);
     return this;
 }
 
-SelVal.prototype = {//这下我们就可以直接通过'  selfVue.name = 'canfoo'  '的形式来进行改变模板数据了
+SelVue.prototype = {//这下我们就可以直接通过'  selfVue.name = 'canfoo'  '的形式来进行改变模板数据了
     proxyKeys: function (key) {
         var self = this;//SelVal
         Object.defineProperty(this, key ,{
