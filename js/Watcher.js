@@ -5,7 +5,7 @@
 
 function Watcher(vm, exp, cb) {
     this.cb = cb;//callback
-    this.exp = exp;//放着data的key
+    this.exp = exp;//放着data中属性对应的key
     this.vm = vm;
     this.value = this.get();//将自己添加到订阅器的操作
 };

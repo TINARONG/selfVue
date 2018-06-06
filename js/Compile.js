@@ -12,9 +12,8 @@ function Compile(el, vm) {
     this.vm = vm;
     this.el = document.querySelector(el)
     this.fragment = null;
-    this.init()
+    this.init();
 }
-
 
 Compile.prototype = {
     init: function () {
@@ -40,10 +39,12 @@ Compile.prototype = {
         var self = this;
         var childNodes = el.childNodes;//childNodes:所有子节点（包含元素节点和文档节点）
         [].slice.call(childNodes).forEach(function (node) {
-            var reg = /\{\{.*\}\}/;
+            var reg = /\{\{(.*)\}\}/;
             var text = node.textContent;//获取元素中的文本内容
-        
-            if(self.isTextNode(node) && reg.test(text)){//只考虑了{{}}这一种情况；
+            
+            if(self.isElementNode(node)){//处理事件
+                self.complie(node);
+            } else if(self.isTextNode(node) && reg.test(text)){//视图内赋值，只考虑了{{}}这一种情况；
                 self.compileText(node, reg.exec(text)[1]);
             }
         
@@ -52,21 +53,79 @@ Compile.prototype = {
             }
         })
     },
-    compileText:function (node, exp ) {//匹配到{{}}的处理
+    complie:function (node) {//用于解析处理指令
+       
         var self = this;
-        var initText = this.vm[exp];
-        this.updateText(node, initText);//初始化时将初始数据data赋值到视图中；
-        new Watcher(this.vm, exp,function (value) {//生成订阅器，绑定更新函数
-            console.log(exp);
+        var nodeAttrrs = node.attributes;//dom属性
+        Array.prototype.forEach.call(nodeAttrrs,function (attr) {//遍历所有节点属性
+            var attrName = attr.name;
+            if(self.isDirective(attrName)){
+                var exp = attr.value;
+              
+                var dir = attrName.substring(2);
+                if(self.isEventDirective(dir)){//事件指令(v-on)
+                    self.compileEvent(node, self.vm, exp, dir)
+                } else { //v-modal
+                    self.compileModal(node, self.vm, exp, dir)
+                }
+                node.removeAttribute(attrName);
+            }
+        })
+    },
+    compileText:function (node, exp) {//匹配到{{}}的处理
+        var self = this;
+        var initText = self.vm[exp];
+        self.updateText(node, initText);//初始化时将初始数据data赋值到视图中；
+        new Watcher(self.vm, exp,function (value) {//生成订阅器，绑定更新函数
             self.updateText(node, value);
         })
+    },
+    compileEvent: function (node, vm, exp, dir) {
+        var eventType = dir.split(':')[1];
+        var cb = vm.methods && vm.methods[exp];
+        if(eventType && cb){
+            node.addEventListener(eventType,cb.bind(vm),false)
+        }
+    },
+    compileModal:function (node, vm, exp, dir) {
+        var self = this;
+        var val = this.vm[exp];
+        console.log(val);
+        this.modelUpdater(node, val);
+        new Watcher(this.vm, exp, function (value) {
+            self.modelUpdater(node, value);
+        });
+        
+        node.addEventListener('input', function (e) {
+            var newValue = e.target.value;
+            console.log(newValue);
+            if(val === newValue){
+                return;
+            }
+            self.vm[exp] = newValue;
+            val = newValue;
+        })
+    },
+
+    isDirective: function (attr) {
+      return  attr.indexOf('v-') == 0
     },
     updateText: function (node, value) {
         node.textContent = typeof value == 'undefined' ? '' : value;
     },
+    modelUpdater: function (node, value, oldValue) {
+        node.value = typeof  value == 'undefined' ? '' : value;
+    },
+    isEventDirective: function (dir) {
+        return dir.indexOf("on:") === 0
+    },
+    isElementNode: function (node) {
+        return node.nodeType == 1;
+    },
     isTextNode: function (node) {
         return node.nodeType == 3
-    }
+    },
+    
 }
 
 

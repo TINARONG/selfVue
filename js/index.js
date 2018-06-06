@@ -9,7 +9,6 @@ function SelVue(options) {
     Object.keys(this.data).forEach(function (key) {
         self.proxyKeys(key); //绑定代理属性
     })
-    
     observe(this.data);
     new Compile(options.el, this.vm);
     return this;

@@ -8,6 +8,8 @@
 	<div id="app">
 		<h1>{{title}}</h1>
 		<h2>{{name}}</h2>
+		<input v-model="input_val">
+		<div>input_val:{{input_val}}</div>
 	</div>
 </body>
 <script src="js/observer.js"></script>
@@ -19,7 +21,8 @@
         el: '#app',
         data: {
             title: 'hello world',
-            name: ''
+            name: 'abc',
+            input_val:'这里是input值'
         }
 	})
 </script>
